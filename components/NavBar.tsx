@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { assetUrl } from '@/lib/utils';
 
 interface Settings {
   site_name: string;
@@ -40,7 +41,7 @@ export default function NavBar() {
           <div className="w-8 h-8 border border-accent flex items-center justify-center overflow-hidden group-hover:bg-accent transition-all duration-300">
             {settings.site_logo ? (
               <img 
-                src={settings.site_logo} 
+                src={assetUrl(settings.site_logo)} 
                 alt="Logo" 
                 className="w-full h-full object-contain group-hover:invert transition-all duration-300" 
               />

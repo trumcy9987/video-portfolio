@@ -12,10 +12,16 @@ export async function GET(req: Request) {
     const totalViews = ((await dbGet('SELECT COALESCE(SUM(views), 0) as c FROM videos')) as any)?.c || 0;
     const totalComments = ((await dbGet('SELECT COUNT(*) as c FROM comments')) as any)?.c || 0;
 
-    // 最近7天播放趋势
+    // 今日播放量：按视频+日期去重
+    const todayViews = ((await dbGet(`
+      SELECT COUNT(DISTINCT video_id || '-' || DATE(created_at)) as c
+      FROM play_logs WHERE DATE(created_at) = CURRENT_DATE
+    `)) as any)?.c || 0;
+
+    // 最近7天播放趋势（按 play_logs 分组）
     const weeklyRaw: any[] = await dbAll(`
-      SELECT DATE(created_at) as date, COALESCE(SUM(views), 0) as views
-      FROM videos
+      SELECT DATE(created_at) as date, COUNT(DISTINCT video_id) as views
+      FROM play_logs
       WHERE created_at >= NOW() - INTERVAL '7 days'
       GROUP BY DATE(created_at)
       ORDER BY date ASC
@@ -35,7 +41,7 @@ export async function GET(req: Request) {
       totalVideos,
       totalViews,
       totalComments,
-      todayViews: 0,
+      todayViews,
       weeklyStats: weeklyRaw.map((r: any) => ({
         date: r.date,
         views: Number(r.views) || 0,

@@ -33,6 +33,13 @@ export const admin_users = pgTable('admin_users', {
   password: text('password').notNull(),
 });
 
+export const play_logs = pgTable('play_logs', {
+  id: text('id').primaryKey(),
+  video_id: text('video_id').notNull(),
+  ip: text('ip'),
+  created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
+});
+
 export const settings = pgTable('settings', {
   key: text('key').primaryKey(),
   value: text('value'),

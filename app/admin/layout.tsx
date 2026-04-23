@@ -2,6 +2,7 @@
 
 import { useState, useEffect, ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { assetUrl } from '@/lib/utils';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -20,6 +21,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
   const [authed, setAuthed] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [siteLogo, setSiteLogo] = useState('');
 
   useEffect(() => {
     // 检查是否登录页
@@ -35,6 +37,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       })
       .catch(() => router.push('/admin/login'));
   }, [pathname, router]);
+
+  useEffect(() => {
+    fetch('/api/admin/settings', { credentials: 'include' })
+      .then(r => r.json())
+      .then(d => setSiteLogo(d.settings?.site_logo || ''));
+  }, []);
 
   if (pathname === '/admin/login') return <>{children}</>;
 
@@ -59,8 +67,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       }`}>
         <div className="p-5 border-b border-border">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 border border-accent flex items-center justify-center text-accent font-display text-sm font-bold">
-              影
+            <div className="w-8 h-8 border border-accent flex items-center justify-center overflow-hidden">
+              {siteLogo ? (
+                <img src={assetUrl(siteLogo)} alt="Logo" className="w-full h-full object-contain" />
+              ) : (
+                <span className="text-accent font-display text-sm font-bold">影</span>
+              )}
             </div>
             <div>
               <p className="text-sm font-medium">管理后台</p>

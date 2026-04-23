@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { dbGet, dbRun, dbAll } from '@/lib/db';
+import { generateId } from '@/lib/utils';
 
 /**
  * 规范化资源 URL
@@ -30,6 +31,13 @@ export async function GET(
     if (!referer.includes('/admin')) {
       await dbRun('UPDATE videos SET views = views + 1 WHERE id = ?', [id]);
       video.views = (video.views || 0) + 1;
+
+      // 记录播放日志
+      const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '';
+      await dbRun(
+        'INSERT INTO play_logs (id, video_id, ip) VALUES (?, ?, ?)',
+        [generateId(), id, ip]
+      );
     }
 
     const comments = await dbAll(

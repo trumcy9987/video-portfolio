@@ -146,6 +146,15 @@ CREATE TABLE IF NOT EXISTS settings (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS play_logs (
+  id TEXT PRIMARY KEY,
+  video_id TEXT NOT NULL,
+  ip TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_play_logs_video ON play_logs(video_id);
+CREATE INDEX IF NOT EXISTS idx_play_logs_date ON play_logs(DATE(created_at));
 CREATE INDEX IF NOT EXISTS idx_videos_featured ON videos(featured DESC, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_videos_created ON videos(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_comments_video ON comments(video_id);
