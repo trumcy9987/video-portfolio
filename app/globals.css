@@ -1,0 +1,195 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Noto+Serif+SC:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg: #0A0A0C;
+  --color-surface: #111115;
+  --color-border: #1E1E24;
+  --color-muted: #2A2A32;
+  --color-text1: #F0EDE6;
+  --color-text2: #8A8A96;
+  --color-text3: #4A4A56;
+  --color-accent: #E8C97A;
+  --color-accent2: #C47D3A;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  font-family: 'DM Sans', sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text1);
+  scroll-behavior: smooth;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 噪点纹理叠加 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.4;
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-muted);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text3);
+}
+
+/* 文字选择 */
+::selection {
+  background: var(--color-accent);
+  color: var(--color-bg);
+}
+
+/* 焦点样式 */
+:focus-visible {
+  outline: 1.5px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* 链接 */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* 按钮基础 */
+button {
+  cursor: pointer;
+  font-family: inherit;
+  border: none;
+  background: none;
+}
+
+/* 输入框 */
+input, textarea, select {
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* 金色渐变文字 */
+.text-gradient {
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent2) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 页面入场动画 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-600 { animation-delay: 600ms; }
+.delay-700 { animation-delay: 700ms; }
+.delay-800 { animation-delay: 800ms; }
+
+/* 卡片光晕效果 */
+.card-glow:hover {
+  box-shadow: 0 0 0 1px rgba(232, 201, 122, 0.3), 0 8px 32px rgba(232, 201, 122, 0.08);
+}
+
+/* 遮罩层 */
+.modal-overlay {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* 输入框光晕 */
+input:focus, textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 1.5px rgba(232, 201, 122, 0.4);
+}
+
+/* 渐变遮罩 */
+.hero-gradient {
+  background: linear-gradient(
+    to bottom,
+    rgba(10, 10, 12, 0.3) 0%,
+    rgba(10, 10, 12, 0.6) 40%,
+    rgba(10, 10, 12, 0.9) 70%,
+    rgba(10, 10, 12, 1) 100%
+  );
+}
+
+/* 视频卡片播放按钮 */
+.play-btn {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.play-btn:hover {
+  transform: scale(1.08);
+}
+
+/* 滚动指示器动画 */
+@keyframes bounceDown {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(8px); }
+}
+
+.animate-bounce-down {
+  animation: bounceDown 2s ease-in-out infinite;
+}
+
+/* 进度条 */
+.progress-bar {
+  transition: width 0.3s ease;
+}
+
+/* 标签样式 */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 2px;
+  font-size: 12px;
+  color: var(--color-text2);
+  letter-spacing: 0.05em;
+}
