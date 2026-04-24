@@ -1,6 +1,20 @@
-/**
- * 前端通用工具函数
- */
+export function assetUrl(url: string | null | undefined): string {
+  if (!url) return '';
+  if (url.startsWith('http')) return url;
+  if (url.startsWith('/api/proxy/')) return url;
+  if (url.startsWith('/cdn/')) return url;
+
+  // CDN_BASE_URL: 指向 Cloudflare Worker 缓存代理
+  const cdnBase = process.env.NEXT_PUBLIC_CDN_BASE_URL || process.env.CDN_BASE_URL || '';
+  if (cdnBase) {
+    const base = cdnBase.replace(/\/$/, '');
+    return url.startsWith('/') ? `${base}${url}` : `${base}/${url}`;
+  }
+
+  // Fallback: Vercel Serverless 代理
+  if (url.startsWith('/')) return '/api/proxy' + url;
+  return '/api/proxy/' + url;
+}
 
 export function formatDate(dateStr: string): string {
   const d = new Date(dateStr);
@@ -33,20 +47,4 @@ export function formatDuration(seconds: number): string {
 
 export function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).substring(2, 10);
-}
-
-/**
- * 构建资源 URL，优先走 Cloudflare CDN，加速全球访问
- * - http(s):// 外部链接：直接返回
- * - /api/proxy/xxx：直接返回（走 Vercel → B2）
- * - /cdn/xxx：走 Cloudflare CDN Worker（CDN 加速）
- * - 其他路径：默认走 /api/proxy/ 前缀
- */
-export function assetUrl(url: string | null | undefined): string {
-  if (!url) return '';
-  if (url.startsWith('http')) return url;
-  if (url.startsWith('/api/proxy/')) return url;
-  if (url.startsWith('/cdn/')) return url;
-  if (url.startsWith('/')) return '/api/proxy' + url;
-  return '/api/proxy/' + url;
 }

@@ -9,6 +9,10 @@ interface Settings {
   site_logo: string;
 }
 
+// 模块级缓存 + 5分钟过期
+let settingsCache: { data: Settings | null; timestamp: number } = { data: null, timestamp: 0 };
+const CACHE_TTL = 5 * 60 * 1000; // 5分钟
+
 export default function NavBar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -21,9 +25,20 @@ export default function NavBar() {
   }, []);
 
   useEffect(() => {
+    // 检查缓存是否有效
+    const now = Date.now();
+    if (settingsCache.data && (now - settingsCache.timestamp) < CACHE_TTL) {
+      setSettings(settingsCache.data);
+      return;
+    }
+
     fetch('/api/admin/settings')
       .then(r => r.json())
-      .then(d => setSettings(d.settings || {}));
+      .then(d => {
+        const s = d.settings || { site_name: 'FILM PORTFOLIO', site_logo: '' };
+        settingsCache = { data: s, timestamp: now };
+        setSettings(s);
+      });
   }, []);
 
   // 解析名称：FILM PORTFOLIO → FILM + PORTFOLIO
