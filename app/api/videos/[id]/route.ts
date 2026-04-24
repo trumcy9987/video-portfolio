@@ -26,18 +26,20 @@ export async function GET(
       return NextResponse.json({ error: '视频不存在' }, { status: 404 });
     }
 
-    // 播放量 +1（排除后台访问）
-    const referer = req.headers.get('referer') || '';
-    if (!referer.includes('/admin')) {
-      await dbRun('UPDATE videos SET views = views + 1 WHERE id = ?', [id]);
-      video.views = (video.views || 0) + 1;
-
-      // 记录播放日志
-      const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '';
-      await dbRun(
-        'INSERT INTO play_logs (id, video_id, ip) VALUES (?, ?, ?)',
-        [generateId(), id, ip]
-      );
+    // 播放量 +1 和播放日志（独立 try/catch，不影响视频数据返回）
+    try {
+      const referer = req.headers.get('referer') || '';
+      if (!referer.includes('/admin')) {
+        await dbRun('UPDATE videos SET views = views + 1 WHERE id = ?', [id]);
+        video.views = (video.views || 0) + 1;
+        const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '';
+        await dbRun(
+          'INSERT INTO play_logs (id, video_id, ip) VALUES (?, ?, ?)',
+          [generateId(), id, ip]
+        );
+      }
+    } catch (playErr: any) {
+      console.error('[PLAY_LOG] Failed to record view:', playErr);
     }
 
     const comments = await dbAll(
@@ -56,6 +58,7 @@ export async function GET(
       comments,
     });
   } catch (err: any) {
-    return NextResponse.json({ error: '获取视频失败' }, { status: 500 });
+    console.error('[API] /api/videos/[id] error:', err);
+    return NextResponse.json({ error: '获取视频失败', detail: err.message }, { status: 500 });
   }
 }
