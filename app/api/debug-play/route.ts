@@ -1,36 +1,38 @@
 import { NextResponse } from 'next/server';
-import { dbGet, dbAll } from '@/lib/db';
+import { sql } from '@vercel/postgres';
 
 export async function GET() {
   try {
-    // Check if play_logs table exists
-    const tableCheck = await dbGet("SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name = 'play_logs') as exists");
-    const exists = tableCheck?.exists;
+    // 1. Check if play_logs table exists
+    const tableCheck = await sql`SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name = 'play_logs') as exists`;
+    const exists = tableCheck.rows[0]?.exists;
 
-    if (!exists) {
-      return NextResponse.json({ error: 'play_logs table does not exist' });
+    const result: any = { tableExists: exists };
+
+    if (exists) {
+      // 2. Get columns
+      const cols = await sql`SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'play_logs' ORDER BY ordinal_position`;
+      result.columns = cols.rows;
+
+      // 3. Count
+      const cnt = await sql`SELECT COUNT(*) as c FROM play_logs`;
+      result.count = cnt.rows[0]?.c;
+
+      // 4. Recent records
+      const recent = await sql`SELECT * FROM play_logs ORDER BY created_at DESC LIMIT 10`;
+      result.recent = recent.rows;
+
+      // 5. Server time
+      const time = await sql`SELECT CURRENT_DATE as cur_date, NOW() as now_utc, CURRENT_TIMESTAMP as ts`;
+      result.serverTime = time.rows[0];
     }
 
-    // Get table structure
-    const columns = await dbAll("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'play_logs' ORDER BY ordinal_position");
+    // Also check views column on videos
+    const totalViews = await sql`SELECT COALESCE(SUM(views), 0) as c FROM videos`;
+    result.totalViewsFromVideos = totalViews.rows[0]?.c;
 
-    // Count records
-    const count = await dbGet('SELECT COUNT(*) as c FROM play_logs');
-
-    // Get recent records
-    const recent = await dbAll('SELECT * FROM play_logs ORDER BY created_at DESC LIMIT 10');
-
-    // Test current date
-    const currentDate = await dbGet('SELECT CURRENT_DATE as d, NOW() as n');
-
-    return NextResponse.json({
-      tableExists: true,
-      columns,
-      count: count?.c,
-      recent,
-      serverTime: currentDate
-    });
+    return NextResponse.json(result);
   } catch (err: any) {
-    return NextResponse.json({ error: err.message, stack: err.stack }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
