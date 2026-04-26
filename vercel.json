@@ -4,5 +4,10 @@
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
   "installCommand": "npm install",
-  "regions": ["hkg1"]
+  "regions": ["hkg1"],
+  "functions": {
+    "app/api/**": {
+      "regions": ["hkg1"]
+    }
+  }
 }
