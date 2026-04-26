@@ -23,6 +23,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [authed, setAuthed] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [siteLogo, setSiteLogo] = useState('');
+  const [logoLoaded, setLogoLoaded] = useState(false);
 
   useEffect(() => {
     // 检查是否登录页
@@ -68,9 +69,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       }`}>
         <div className="p-5 border-b border-border">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden group">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden group">
               {siteLogo ? (
-                <img src={assetUrl(siteLogo)} alt="Logo" className="w-full h-full object-contain group-hover:[filter:brightness(0)_invert(1)] transition-all duration-300" />
+                <img src={assetUrl(siteLogo)} alt="Logo" onLoad={() => setLogoLoaded(true)} onError={() => setLogoLoaded(false)} className={`w-full h-full object-contain group-hover:[filter:brightness(0)_invert(1)] transition-all duration-300 ${logoLoaded ? 'opacity-100' : 'opacity-0'}`} />
               ) : (
                 <span className="text-accent font-display text-sm font-bold group-hover:text-white transition-all duration-300">影</span>
               )}

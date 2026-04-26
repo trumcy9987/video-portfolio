@@ -17,6 +17,7 @@ export default function NavBar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [settings, setSettings] = useState<Settings>({ site_name: 'FILM PORTFOLIO', site_logo: '' });
+  const [logoLoaded, setLogoLoaded] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
@@ -53,12 +54,14 @@ export default function NavBar() {
       <div className="max-w-7xl mx-auto px-6 lg:px-20 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden transition-all duration-300">
+          <div className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden transition-all duration-300">
             {settings.site_logo ? (
               <img 
                 src={assetUrl(settings.site_logo)} 
                 alt="Logo" 
-                className="w-full h-full object-contain group-hover:[filter:brightness(0)_invert(1)] transition-all duration-300" 
+                onLoad={() => setLogoLoaded(true)}
+                onError={() => setLogoLoaded(false)}
+                className={`w-full h-full object-contain group-hover:[filter:brightness(0)_invert(1)] transition-all duration-300 ${logoLoaded ? 'opacity-100' : 'opacity-0'}`} 
               />
             ) : (
               <span className="text-accent font-display text-sm font-bold group-hover:text-white transition-all duration-300">影</span>
