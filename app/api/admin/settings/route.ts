@@ -9,6 +9,7 @@ export async function GET() {
     const siteName = await dbGet<{ value: string }>("SELECT value FROM settings WHERE key = 'site_name'");
     const siteLogo = await dbGet<{ value: string }>("SELECT value FROM settings WHERE key = 'site_logo'");
     const heroBg = await dbGet<{ value: string }>("SELECT value FROM settings WHERE key = 'hero_background'");
+    const logoSize = await dbGet<{ value: string }>("SELECT value FROM settings WHERE key = 'logo_size'");
 
     // 返回纯 key，由前端 assetUrl() 统一加上 /cdn/ 前缀
     const logoUrl = siteLogo?.value ? extractKey(siteLogo.value) : '';
@@ -19,11 +20,12 @@ export async function GET() {
         site_name: siteName?.value || 'FILM PORTFOLIO',
         site_logo: logoUrl,
         hero_background: bgUrl,
+        logo_size: logoSize?.value ? parseFloat(logoSize.value) : 1.0,
       }
     });
   } catch {
     return NextResponse.json({
-      settings: { site_name: 'FILM PORTFOLIO', site_logo: '', hero_background: '' },
+      settings: { site_name: 'FILM PORTFOLIO', site_logo: '', hero_background: '', logo_size: 1.0 },
     });
   }
 }
@@ -74,6 +76,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Logo 缩放系数
+    const logoSizeVal = (formData.get('logo_size') as string)?.trim();
+    if (logoSizeVal) {
+      const sizeVal = Math.max(0.5, Math.min(3.0, parseFloat(logoSizeVal) || 1));
+      await dbRun(
+        "INSERT INTO settings (key, value, updated_at) VALUES ('logo_size', ?, NOW()) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()",
+        [String(sizeVal)]
+      );
+    }
+
     return NextResponse.json({ success: true });
   } catch (err: any) {
     console.error('Settings save error:', err);
@@ -88,8 +100,16 @@ export async function DELETE(req: Request) {
     if (!admin) return NextResponse.json({ error: '未授权' }, { status: 401 });
 
     const { key } = await req.json();
-    if (!['site_logo', 'hero_background'].includes(key)) {
+    if (!['site_logo', 'hero_background', 'logo_size'].includes(key)) {
       return NextResponse.json({ error: '无效的设置项' }, { status: 400 });
+    }
+
+    if (key === 'logo_size') {
+      // logo_size 不删除记录，重置为默认值 1.0
+      await dbRun(
+        "INSERT INTO settings (key, value, updated_at) VALUES ('logo_size', '1.0', NOW()) ON CONFLICT (key) DO UPDATE SET value = '1.0', updated_at = NOW()"
+      );
+      return NextResponse.json({ success: true });
     }
 
     const oldFile = await dbGet<{ value: string }>(`SELECT value FROM settings WHERE key = ?`, [key]);

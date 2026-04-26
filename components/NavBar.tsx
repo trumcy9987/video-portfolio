@@ -53,15 +53,15 @@ export default function NavBar() {
       <div className="max-w-7xl mx-auto px-6 lg:px-20 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-8 h-8 border border-accent flex items-center justify-center overflow-hidden group-hover:bg-accent transition-all duration-300">
+          <div className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden transition-all duration-300">
             {settings.site_logo ? (
               <img 
                 src={assetUrl(settings.site_logo)} 
                 alt="Logo" 
-                className="w-full h-full object-contain group-hover:invert transition-all duration-300" 
+                className="w-full h-full object-contain group-hover:[filter:brightness(0)_invert(1)] transition-all duration-300" 
               />
             ) : (
-              <span className="text-accent font-display text-sm font-bold group-hover:text-bg transition-all duration-300">影</span>
+              <span className="text-accent font-display text-sm font-bold group-hover:text-white transition-all duration-300">影</span>
             )}
           </div>
           <span className="font-display text-lg tracking-wider hidden sm:block">

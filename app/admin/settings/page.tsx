@@ -7,6 +7,7 @@ interface Settings {
   site_name: string;
   site_logo: string;
   hero_background: string;
+  logo_size?: number;
 }
 
 export default function SettingsPage() {
@@ -14,6 +15,7 @@ export default function SettingsPage() {
   const [siteName, setSiteName] = useState('');
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [bgFile, setBgFile] = useState<File | null>(null);
+  const [logoSize, setLogoSize] = useState(1);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -23,6 +25,7 @@ export default function SettingsPage() {
       .then(d => {
         setSettings(d.settings || {});
         setSiteName(d.settings?.site_name || '');
+        setLogoSize(parseFloat(d.settings?.logo_size) || 1);
       });
   }, []);
 
@@ -34,6 +37,7 @@ export default function SettingsPage() {
     if (siteName.trim()) formData.append('site_name', siteName.trim());
     if (logoFile) formData.append('site_logo', logoFile);
     if (bgFile) formData.append('hero_background', bgFile);
+    if (logoSize !== 1) formData.append('logo_size', String(logoSize));
 
     try {
       const res = await fetch('/api/admin/settings', { method: 'POST', body: formData, credentials: 'include' });
@@ -42,6 +46,7 @@ export default function SettingsPage() {
         setMessage('设置已保存');
         const fresh = await fetch('/api/admin/settings', { credentials: 'include' }).then(r => r.json());
         setSettings(fresh.settings || {});
+        setLogoSize(parseFloat(fresh.settings?.logo_size) || 1);
         setLogoFile(null);
         setBgFile(null);
       } else {
@@ -92,7 +97,7 @@ export default function SettingsPage() {
         <div>
           <label className="text-sm text-text2 mb-2 block font-mono tracking-wider">网站Logo</label>
           <div className="flex items-start gap-4">
-            <div className="w-20 h-20 bg-surface border border-border rounded flex items-center justify-center overflow-hidden relative">
+            <div className="bg-surface border border-border rounded flex items-center justify-center overflow-hidden relative" style={{ width: `${100 * (settings.logo_size || 1)}px`, height: `${100 * (settings.logo_size || 1)}px` }}>
               {settings.site_logo ? (
                 <>
                   <img src={assetUrl(settings.site_logo)} alt="Logo" className="w-full h-full object-contain" />
@@ -118,6 +123,20 @@ export default function SettingsPage() {
                 {logoFile ? logoFile.name : '上传新Logo'}
               </label>
               <p className="text-text3 text-xs mt-2">建议尺寸：正方形，如 80x80 像素</p>
+              <div className="mt-3">
+                <label className="text-xs text-text3 mb-1 block font-mono tracking-wider">Logo 缩放系数</label>
+                <input
+                  type="number"
+                  value={logoSize}
+                  onChange={e => setLogoSize(Math.max(0.5, Math.min(3.0, parseFloat(e.target.value) || 1)))}
+                  step="0.1"
+                  min="0.5"
+                  max="3.0"
+                  className="w-24 bg-surface border border-border rounded px-3 py-1.5 text-sm text-text1 focus:border-accent/40 transition-colors"
+                />
+                <span className="text-text3 text-xs ml-2">{Math.round(100 * logoSize)}x{Math.round(100 * logoSize)}</span>
+                <p className="text-text3 text-xs mt-1">默认 1.0 = 100x100px，范围 0.5~3.0</p>
+              </div>
             </div>
           </div>
         </div>
