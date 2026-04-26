@@ -16,10 +16,6 @@ export default function SettingsPage() {
   const [bgFile, setBgFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
-  const [accountMsg, setAccountMsg] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPwd, setConfirmPwd] = useState('');
 
   useEffect(() => {
     fetch('/api/admin/settings', { credentials: 'include' })
@@ -169,81 +165,6 @@ export default function SettingsPage() {
         >
           {saving ? '保存中...' : '保存设置'}
         </button>
-
-        {/* 分隔线 */}
-        <div className="border-t border-border my-8" />
-
-        {/* 管理员账号 */}
-        <div>
-          <h3 className="font-display text-lg mb-6">管理员账号</h3>
-          <div className="space-y-5">
-            <div>
-              <label className="text-sm text-text2 mb-2 block font-mono tracking-wider">修改管理员账号</label>
-              <input
-                value={username}
-                onChange={e => setUsername(e.target.value)}
-                placeholder="输入新用户名"
-                maxLength={50}
-                className="w-full bg-surface border border-border rounded px-4 py-2.5 text-sm text-text1 placeholder:text-text3 focus:border-accent/40 transition-colors"
-              />
-            </div>
-            <div>
-              <label className="text-sm text-text2 mb-2 block font-mono tracking-wider">输入新密码</label>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder="输入新密码"
-                className="w-full bg-surface border border-border rounded px-4 py-2.5 text-sm text-text1 placeholder:text-text3 focus:border-accent/40 transition-colors"
-              />
-            </div>
-            <div>
-              <label className="text-sm text-text2 mb-2 block font-mono tracking-wider">确认新密码</label>
-              <input
-                type="password"
-                value={confirmPwd}
-                onChange={e => setConfirmPwd(e.target.value)}
-                placeholder="再次输入新密码"
-                className="w-full bg-surface border border-border rounded px-4 py-2.5 text-sm text-text1 placeholder:text-text3 focus:border-accent/40 transition-colors"
-              />
-            </div>
-            {accountMsg && <p className={accountMsg.includes('已保存') ? 'text-green text-sm' : 'text-red text-sm'}>{accountMsg}</p>}
-            <button
-              onClick={async () => {
-                if (!username.trim() && !password && !confirmPwd) {
-                  setAccountMsg('请至少修改一项');
-                  return;
-                }
-                if (password && password !== confirmPwd) {
-                  setAccountMsg('两次密码不一致');
-                  return;
-                }
-                try {
-                  const res = await fetch('/api/admin/account', {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: username.trim() || '', password, confirm_password: confirmPwd }),
-                    credentials: 'include',
-                  });
-                  const data = await res.json();
-                  if (data.success) {
-                    setAccountMsg('账号设置已保存');
-                    setUsername('');
-                    setPassword('');
-                    setConfirmPwd('');
-                  } else {
-                    setAccountMsg(data.error || '保存失败');
-                  }
-                } catch {
-                  setAccountMsg('网络错误');
-                }
-              }}
-              className="px-8 py-3 bg-accent text-bg font-medium rounded hover:bg-accent-2 transition-colors"
-            >
-              保存账号设置
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );
